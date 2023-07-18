@@ -1,11 +1,12 @@
 library(divvy) # uniqify and sdsumry functions
-# for stationarity and cross-correlation tests on time series
-library(fUnitRoots) 
-library(TSA)
+library(fUnitRoots) # for timeseries stationarity tests
+library(NSM3) # for bootstrapped confidence intervals
 # table and plot outputs
 library(stringr)
 library(xtable)
 options(xtable.timestamp = "")
+library(ggplot2)
+library(cowplot)
 
 # Prep subsample data -----------------------------------------------------
 
@@ -130,3 +131,156 @@ print(tabl, add.to.row = addtorow, file = name_rich,
       caption.placement = 'top', booktabs = TRUE,
       include.colnames = FALSE, include.rownames = FALSE, 
       sanitize.text.function = noDot)
+
+# Global correlations -----------------------------------------------------
+
+# * Time series analysis --------------------------------------------------
+
+# (1) richness vs. proportional occupancy
+
+# check stationarity of predictor series (and fit AR1 model to achieve it)
+
+globlRich <- globlMeta$nTax
+adfTest(globlRich) 
+acf(globlRich) 
+rich_AR <- arima(globlRich, order = c(1, 0, 0)) # fit AR1 model
+rich_e <- as.numeric(rich_AR$residuals)
+acf(rich_e)
+adfTest(rich_e) 
+rich_AR$coef
+#       ar1   intercept 
+# 0.6368807 420.7497075 
+
+cor(rich_e, globlMeta$propOcc, method = 'kend')
+# [1] -0.4203789
+
+kendall.ci(rich_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000) # 95% CI
+# 1 - alpha = 0.95 two-sided CI for tau:
+# -0.553, -0.276 
+
+# (2) site number vs. richness
+
+globlArea <- globlMeta$nLoc
+adfTest(globlArea)
+area_AR <- arima(globlArea, order = c(1, 0, 0))
+area_e <- as.numeric(area_AR$residuals)
+acf(area_e)
+adfTest(area_e)
+area_AR$coef
+#       ar1   intercept 
+# 0.4006415 102.0221630
+
+cor(area_e, globlRich, method = 'kend')
+# [1] 0.4144468
+
+kendall.ci(area_e, globlRich, bootstrap = TRUE, B = 10000)
+# 1 - alpha = 0.95 two-sided CI for tau:
+# 0.259, 0.554
+
+# (3) site aggregation
+
+globlAgg <- globlMeta$minSpanTree
+adfTest(globlAgg)
+agg_AR <- arima(globlAgg, order = c(1, 0, 0))
+agg_e <- as.numeric(agg_AR$residuals)
+acf(agg_e)
+adfTest(agg_e)
+agg_AR$coef
+#          ar1    intercept 
+# 3.736689e-01 6.346312e+04
+
+# site aggregation vs. richness
+
+cor(agg_e, globlRich, method = 'kend')
+# [1] 0.4441599
+
+kendall.ci(agg_e, globlRich, bootstrap = TRUE, B = 10000)
+# 1 - alpha = 0.95 two-sided CI for tau:
+# 0.313, 0.561 
+
+# cross-correlation functions (use package TSA)
+# pw1 <- prewhiten(rich, span, x.model=rich_AR) 
+# pw2 <- prewhiten(rich, occ, x.model=rich_AR) 
+
+# * Scatterplots ----------------------------------------------------------
+
+artArea <- max(globlMeta$nLoc)
+arty <- max(globlMeta$nTax)
+p1 <- ggplot(globlMeta, aes(x = nLoc, y = nTax)) +
+  theme_bw() +
+  geom_point() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  scale_x_continuous(labels = rep('', 5)) +
+  annotate('text', x = artArea, y = arty, label = 'Artinskian', hjust = 1.2)
+
+artMst <- max(globlMeta$minSpanTree)
+p2 <- ggplot(globlMeta, aes(x = minSpanTree, y = nTax)) +
+  theme_bw() +
+  geom_point() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  scale_x_continuous(labels = rep('', 5)) +
+  scale_y_continuous(labels = rep('   ', 4)) +
+  annotate('text', x = artMst, y = arty, label = 'Artinskian', hjust = 1.2)
+
+gzhelArea <- min(globlMeta$nLoc)
+gzhely <- max(globlMeta$propOcc)
+p3 <- ggplot(globlMeta, aes(x = nLoc, y = propOcc)) +
+  theme_bw() +
+  geom_point() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank() 
+  ) +
+  annotate('text', x = gzhelArea, y = gzhely, label = 'Gzhelian', hjust = -0.2)
+
+gzhelMst <- globlMeta$minSpanTree[globlMeta$bin == 'Gzhelian']
+p4 <- ggplot(globlMeta, aes(x = minSpanTree, y = propOcc)) +
+  theme_bw() +
+  geom_point() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  scale_x_continuous(labels = c(30, 50, 70, 90, '')) +
+  scale_y_continuous(labels = rep('', 4)) +
+  annotate('text', x = gzhelMst, y = gzhely, label = 'Gzhelian', hjust = -0.2)
+
+quadPlot <- plot_grid(p1, p2, p3, p4,
+                      labels = c('AUTO'),
+                      hjust = -1.25, vjust = 1.6,
+                      ncol = 2,
+                      align = 'hv'
+                      )
+
+# add x-axis titles
+ttlX <- ggdraw() + 
+  draw_label('Site count', # fontface = 'bold',
+    x = 0.205, hjust = 0
+  ) + 
+  draw_label('Site dispersion (10^3 km)', # fontface = 'bold',
+             x = 0.59, hjust = 0
+  )
+plotaddx <- plot_grid(
+  quadPlot, ttlX,
+  ncol = 1,
+  # rel_heights values control vertical title margins
+  rel_heights = c(1, 0.04)
+)
+
+# add y-axis titles
+ttlY <- ggdraw() +
+  draw_label('Proportional occupancy', # fontface = 'bold',
+             y = 0.29, angle = 90
+             ) +
+  draw_label('Species count', # fontface = 'bold',
+             y = 0.78, angle = 90)
+
+plotaddxy <- plot_grid(
+  ttlY, plotaddx,
+  ncol = 2, rel_widths = c(0.04, 1)
+)
+
+day <- format(as.Date(date(), format="%a %b %d %H:%M:%S %Y"), format='%Y-%m-%d')
+panelsNm <- paste0('scatterplots-global-bias_', day, '.pdf')
+pdf(panelsNm, width = 5.9, height = 5.75) # Palaeobiology 2-col width = 15cm
+plotaddxy
+dev.off()
