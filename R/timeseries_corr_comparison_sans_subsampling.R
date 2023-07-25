@@ -165,7 +165,7 @@ kendall.ci(rich_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000) # 95% CI
 # 1 - alpha = 0.95 two-sided CI for tau:
 # -0.553, -0.276 
 
-# (2) site number vs. richness
+# (2) site number
 
 globlArea <- globlMeta$nLoc
 adfTest(globlArea)
@@ -177,12 +177,21 @@ area_AR$coef
 #       ar1   intercept 
 # 0.4006415 102.0221630
 
+# site number vs. richness
 cor(area_e, globlRich, method = 'kend')
 # [1] 0.4144468
 
 kendall.ci(area_e, globlRich, bootstrap = TRUE, B = 10000)
 # 1 - alpha = 0.95 two-sided CI for tau:
 # 0.259, 0.554
+
+# site number vs. proportional occupancy
+cor(area_e, globlMeta$propOcc, method = 'kend')
+# [1] -0.6682028
+
+kendall.ci(area_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
+# 1 - alpha = 0.95 two-sided CI for tau:
+# -0.769, -0.546 
 
 # (3) site aggregation
 
@@ -205,10 +214,14 @@ kendall.ci(agg_e, globlRich, bootstrap = TRUE, B = 10000)
 # 1 - alpha = 0.95 two-sided CI for tau:
 # 0.313, 0.561 
 
-# cross-correlation functions (use package TSA)
-# pw1 <- prewhiten(rich, span, x.model=rich_AR) 
-# pw2 <- prewhiten(rich, occ, x.model=rich_AR) 
+# site aggregation vs. proportional occupancy
 
+cor(agg_e, globlMeta$propOcc, method = 'kend')
+# [1] -0.6507937
+
+kendall.ci(agg_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
+# 1 - alpha = 0.95 two-sided CI for tau:
+# -0.743, -0.544 
 
 # * Sampling scatterplots -------------------------------------------------
 
@@ -302,7 +315,22 @@ dev.off()
 
 # * Range-vs-richness plots -----------------------------------------------
 
-# PANEL 1: subsampled range size vs. species count scatterplot
+# PANEL 1: global range size vs. species count scatterplot
+
+gzhelPO <- max(globlMeta$propOcc)
+gzhelRich <- globlMeta$nTax[globlMeta$bin == 'Gzhelian']
+
+pGlobl <- ggplot(data = globlMeta, aes(x = nTax, y = propOcc)) +
+  theme_bw() +
+  geom_point() +
+  scale_x_continuous(limits = c(0, 1500), expand = c(0, 0), position = 'top',
+                     labels = c(0, 500, 1000, '')) +
+  scale_y_continuous(name = 'Proportion of global cells',
+                     limits = c(0, 0.15), expand = c(0, 0)) +
+  theme(axis.title.x = element_blank()) +
+  annotate('text', x = gzhelRich, y = gzhelPO, label = 'Gzhelian', hjust = -0.2)
+
+# PANEL 2: subsampled range size vs. species count scatterplot
 
 # error bar function
 barPos <- function(t, v, dat){
@@ -342,21 +370,6 @@ pSubsmpl <- ggplot(data = plotDat, aes(x = species_count_avg, y = oc_wo.singl_me
 # NB: axes are flipped here compared to Fig 1 of Antell et al. (2020)
 # That's because 2020 figure plotted y-axis as shared between panels A and B.
 # Here all axis scales differ (different B subplot) and need to match axes above
-
-# PANEL 2: global range size vs. species count scatterplot
-
-gzhelPO <- max(globlMeta$propOcc)
-gzhelRich <- globlMeta$nTax[globlMeta$bin == 'Gzhelian']
-
-pGlobl <- ggplot(data = globlMeta, aes(x = nTax, y = propOcc)) +
-  theme_bw() +
-  geom_point() +
-  scale_x_continuous(limits = c(0, 1500), expand = c(0, 0), position = 'top',
-                     labels = c(0, 500, 1000, '')) +
-  scale_y_continuous(name = 'Proportion of global cells',
-                     limits = c(0, 0.15), expand = c(0, 0)) +
-  theme(axis.title.x = element_blank()) +
-  annotate('text', x = gzhelRich, y = gzhelPO, label = 'Gzhelian', hjust = -0.2)
 
 # PANEL 3: time series of species count
 
@@ -486,10 +499,10 @@ pg_w_axis <- gtable::gtable_add_grob(x = pg, grobs = gt, t = 3, l = j.plot)
 
 # align the bottom-row plot (time series) with the left-most plot of the top row 
 # because y-axis labels have different number of digits
-pAlignLft <- align_plots(pSubsmpl, pg_w_axis, align = 'v', axis = 'l')
+pAlignLft <- align_plots(pGlobl, pg_w_axis, align = 'v', axis = 'l')
 
 plotTop <- plot_grid(
-  pAlignLft[[1]], pGlobl,
+  pAlignLft[[1]], pSubsmpl,
   ncol = 2, rel_widths = c(1,1),
   labels = c('AUTO'),
   hjust = -1.3, vjust = 1.6
