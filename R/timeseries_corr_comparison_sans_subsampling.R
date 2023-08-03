@@ -132,10 +132,10 @@ addtorow$command <- c("& \\multicolumn{4}{c}{Correlation with predictor time ser
 day <- format(as.Date(date(), format="%a %b %d %H:%M:%S %Y"), format='%Y-%m-%d') 
 name_rich <- paste0('tau_range_vs_richness_subsampled_', day, '.tex')
 noDot <- function(str){ gsub("_", " ", str, fixed = TRUE) }
-print(tabl, add.to.row = addtorow, file = name_rich, 
-      caption.placement = 'top', booktabs = TRUE,
-      include.colnames = FALSE, include.rownames = FALSE, 
-      sanitize.text.function = noDot)
+# print(tabl, add.to.row = addtorow, file = name_rich, 
+#       caption.placement = 'top', booktabs = TRUE,
+#       include.colnames = FALSE, include.rownames = FALSE, 
+#       sanitize.text.function = noDot)
 
 # Global correlations -----------------------------------------------------
 
@@ -225,6 +225,12 @@ kendall.ci(agg_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
 
 # * Sampling scatterplots -------------------------------------------------
 
+# tau label positions
+xPos <- c(quantile(globlMeta$nLoc, c(0.2, 0.8) ),
+          quantile(globlMeta$minSpanTree, c(0.35, 0.85) )
+          )
+yPos <- c(1500 * 0.9, 0.15 * 0.9)
+
 artArea <- max(globlMeta$nLoc)
 arty <- max(globlMeta$nTax)
 p1 <- ggplot(globlMeta, aes(x = nLoc, y = nTax)) +
@@ -236,7 +242,9 @@ p1 <- ggplot(globlMeta, aes(x = nLoc, y = nTax)) +
                      labels = rep('', 5)) +
   scale_y_continuous(limits = c(0, 1500), expand = c(0, 0), 
                      labels = c(0, 500, 1000, '')) +
-  annotate('text', x = artArea, y = arty, label = 'Artinskian', hjust = 1.2)
+  annotate('text', x = artArea, y = arty, label = 'Ar', hjust = 1.4) +
+  annotate('text', x = xPos[1], y = yPos[1], hjust = 0.1, # left, top row
+           label = 'corrected tau = 0.41') 
 
 artMst <- max(globlMeta$minSpanTree)
 p2 <- ggplot(globlMeta, aes(x = minSpanTree, y = nTax)) +
@@ -247,7 +255,9 @@ p2 <- ggplot(globlMeta, aes(x = minSpanTree, y = nTax)) +
   scale_x_continuous(labels = rep('', 5)) +
   scale_y_continuous(limits = c(0, 1500), expand = c(0, 0),
                      labels = rep('   ', 4)) +
-  annotate('text', x = artMst, y = arty, label = 'Artinskian', hjust = 1.2)
+  annotate('text', x = artMst, y = arty, label = 'Ar', hjust = 1.4) +
+  annotate('text', x = xPos[3], y = yPos[1], # left, top row
+           label = 'corrected tau = 0.44') 
 
 gzhelArea <- min(globlMeta$nLoc)
 gzhely <- max(globlMeta$propOcc)
@@ -259,7 +269,9 @@ p3 <- ggplot(globlMeta, aes(x = nLoc, y = propOcc)) +
   ) +
   scale_x_continuous(limits = c(0, 385),  expand = c(0, 0)) +
   scale_y_continuous(limits = c(0, 0.15), expand = c(0, 0)) +
-  annotate('text', x = gzhelArea, y = gzhely, label = 'Gzhelian', hjust = -0.2)
+  annotate('text', x = gzhelArea, y = gzhely, label = 'Gz', hjust = -0.4) +
+  annotate('text', x = xPos[2], y = yPos[2], hjust = 0.1, # right, 2nd row
+           label = 'corrected tau = -0.67') 
 
 gzhelMst <- globlMeta$minSpanTree[globlMeta$bin == 'Gzhelian']
 p4 <- ggplot(globlMeta, aes(x = minSpanTree, y = propOcc)) +
@@ -270,7 +282,9 @@ p4 <- ggplot(globlMeta, aes(x = minSpanTree, y = propOcc)) +
   scale_x_continuous(labels = c(30, 50, 70, 90, '')) +
   scale_y_continuous(limits = c(0, 0.15), expand = c(0, 0),
                      labels = rep('', 4)) +
-  annotate('text', x = gzhelMst, y = gzhely, label = 'Gzhelian', hjust = -0.2)
+  annotate('text', x = gzhelMst, y = gzhely, label = 'Gz', hjust = -0.4) +
+  annotate('text', x = xPos[4], y = yPos[2], # right, 2nd row 
+           label = 'corrected tau = -0.65') 
 
 quadPlot <- plot_grid(p1, p2, p3, p4,
                       labels = c('AUTO'),
@@ -328,7 +342,8 @@ pGlobl <- ggplot(data = globlMeta, aes(x = nTax, y = propOcc)) +
   scale_y_continuous(name = 'Proportion of global cells',
                      limits = c(0, 0.15), expand = c(0, 0)) +
   theme(axis.title.x = element_blank()) +
-  annotate('text', x = gzhelRich, y = gzhelPO, label = 'Gzhelian', hjust = -0.2)
+  annotate('text', x = gzhelRich, y = gzhelPO, label = 'Gz', hjust = 1.3) +
+  annotate('text', x = 900, y = yPos[2], label = 'corrected tau = -0.42')
 
 # PANEL 2: subsampled range size vs. species count scatterplot
 
@@ -366,7 +381,8 @@ pSubsmpl <- ggplot(data = plotDat, aes(x = species_count_avg, y = oc_wo.singl_me
   scale_y_continuous(name = 'Count in subsample cells',
                      labels = c(2, 3, 4, '    5')) +
   theme(axis.title.x = element_blank()) +
-  annotate('text', x = hirnRich, y = hirnOcc, label = 'Hirnantian', hjust = -0.2)
+  annotate('text', x = hirnRich, y = hirnOcc, label = 'Hir', hjust = -0.4) +
+  annotate('text', x = 140, y = 4.92, label = 'corrected tau = -0.11')
 # NB: axes are flipped here compared to Fig 1 of Antell et al. (2020)
 # That's because 2020 figure plotted y-axis as shared between panels A and B.
 # Here all axis scales differ (different B subplot) and need to match axes above
@@ -439,44 +455,63 @@ plotDat$t <- -stages$time_mid[ stages$name %in% rownames(plotDat) ]
 globlMeta$t <- -stages$time_mid[ stages$name %in% globlMeta$bin ]
 
 max_x <- min(periods$b_age)
-min_y <- 0 
-max_y <- max(globlMeta$nTax) * 1.05
+min_y <- 0
+max_y <- max(globlMeta$nTax) * 1.5
 mainLw <- 0.7 # width for time series line
 attach(periods)
 
-empty <- ggplot() + 
+tseries <- ggplot() + 
   theme_bw() + 
   labs(title = '') + # create space for geologic scale to go
-  scale_x_continuous(expand = c(0, 0), limits = c(max_x, 0),
+  scale_x_continuous(expand = c(0, 0), limits = c(max_x, 0), 
                      breaks = seq(0, max_x, by = -100),
                      labels = paste( -seq(0, max_x, by = -100) )
                      ) +
-  scale_y_continuous(name = 'Species count',
-                     expand = c(0, 0), limits = c(min_y, max_y) 
+  scale_y_log10(name = 'Species count',
+                expand = c(0, 0), limits = c(10, max_y) 
                      ) +
-  theme(axis.title.x = element_blank())
+  theme(axis.title.x = element_blank()) +
 
-tseries <- 
-  empty +
-  geom_line(data = plotDat, aes(x = t, y = species_count_avg), 
+  geom_line(data = plotDat, aes(x = t, y = species_count_avg),
             lwd = mainLw) +
-  geom_linerange(data = plotDat, aes(x = t, ymin = species_count_lwr, ymax = species_count_upr), 
+  geom_linerange(data = plotDat, aes(x = t, ymin = species_count_lwr, ymax = species_count_upr),
                  linewidth = lw) +
   geom_line(data = globlMeta, aes(x = t, y = nTax), 
             lwd = mainLw, linetype = 'twodash') +
   
   # add opaque rectangular bands for alternate geo periods
   # note that these lines must come after some other object (e.g. line) is plotted
-  annotate('rect', xmin = t_age[1],  xmax = b_age[1],  ymin = -Inf, ymax = Inf, alpha = 0.2) +
-  annotate('rect', xmin = t_age[3],  xmax = b_age[3],  ymin = -Inf, ymax = Inf, alpha = 0.2) +
-  annotate('rect', xmin = t_age[5],  xmax = b_age[5],  ymin = -Inf, ymax = Inf, alpha = 0.2) +
-  annotate('rect', xmin = t_age[7],  xmax = b_age[7],  ymin = -Inf, ymax = Inf, alpha = 0.2) +
-  annotate('rect', xmin = t_age[9],  xmax = b_age[9],  ymin = -Inf, ymax = Inf, alpha = 0.2) +
-  annotate('rect', xmin = t_age[11], xmax = b_age[11], ymin = -Inf, ymax = Inf, alpha = 0.2) 
+  annotate('rect', xmin = t_age[1],  xmax = b_age[1],  ymin = 10, ymax = Inf, alpha = 0.2) +
+  annotate('rect', xmin = t_age[3],  xmax = b_age[3],  ymin = 10, ymax = Inf, alpha = 0.2) +
+  annotate('rect', xmin = t_age[5],  xmax = b_age[5],  ymin = 10, ymax = Inf, alpha = 0.2) +
+  annotate('rect', xmin = t_age[7],  xmax = b_age[7],  ymin = 10, ymax = Inf, alpha = 0.2) +
+  annotate('rect', xmin = t_age[9],  xmax = b_age[9],  ymin = 10, ymax = Inf, alpha = 0.2) +
+  annotate('rect', xmin = t_age[11], xmax = b_age[11], ymin = 10, ymax = Inf, alpha = 0.2) 
+
+# add labels for the outlier time bins from the other plots
+
+# helper dataset to give stage label values and locations
+ptNms <- c('Artinskian', 'Gzhelian', 'Hirnantian')
+ptRows <- which(stages$name %in% ptNms)
+pts2add <- data.frame('stage' = globlMeta$bin[ ptRows ],
+                      'label' = c('Hir', 'Gz', 'Ar'),
+                      'x' = -stages$time_mid[ ptRows ],
+                      'y1' = globlMeta$nTax[ ptRows ],
+                      'y2' = plotDat$species_count_avg[ ptRows ] 
+)
+# pts2add # inspect that labels match up
+
+tseriesPlus <- tseries +
+  geom_point(data = pts2add, aes(x = x, y = y1),
+             shape = 19) +
+  geom_point(data = pts2add, aes(x = x, y = y2),
+             shape = 19) +
+  annotate('text', x = pts2add$x, y = pts2add$y1, 
+           label = pts2add$label, hjust = -0.4) 
 
 # add geologic time series scale bar
 
-pg <- ggplotGrob(tseries) #convert to grob object
+pg <- ggplotGrob(tseriesPlus) #convert to grob object
 j.plot <- unique(gtable::gtable_filter(pg, "panel", trim = FALSE)$layout$l) 
 
 # create empty gtable
