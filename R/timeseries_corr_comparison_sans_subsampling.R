@@ -223,6 +223,55 @@ kendall.ci(agg_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
 # 1 - alpha = 0.95 two-sided CI for tau:
 # -0.743, -0.544 
 
+# * tau probability distrib plots -----------------------------------------
+
+# compose into supplemental figure corresponding to panels of figure 2
+par( mfrow= c(2, 2) )
+day <- format(as.Date(date(), format="%a %b %d %H:%M:%S %Y"), format='%Y-%m-%d')
+panelsNm <- paste0('tau-dists-global-bias_', day, '.pdf')
+
+pdf(panelsNm, width = 6, height = 6) # Palaeobiology 2-col width 15cm, 5.9"
+
+# A. site number (area) vs. richness
+kendall.ci(area_e, globlRich, bootstrap = TRUE, B = 10000)
+
+# B. site aggregation vs. richness
+kendall.ci(agg_e, globlRich, bootstrap = TRUE, B = 10000)
+
+# C. site number (area) vs. proportional occupancy
+kendall.ci(area_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
+
+# D. site aggregation vs. proportional occupancy
+kendall.ci(agg_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
+
+dev.off()
+
+par( mfrow= c(1, 1) )
+
+# > # A. site number (area) vs. richness
+#   > kendall.ci(area_e, globlRich, bootstrap = TRUE, B = 10000)
+# 
+# 1 - alpha = 0.95 two-sided CI for tau:
+#   0.261, 0.552 
+# 
+#   > # B. site aggregation vs. richness
+#   > kendall.ci(agg_e, globlRich, bootstrap = TRUE, B = 10000)
+# 
+# 1 - alpha = 0.95 two-sided CI for tau:
+#   0.308, 0.562 
+# 
+#   > # C. site number (area) vs. proportional occupancy
+#   > kendall.ci(area_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
+# 
+# 1 - alpha = 0.95 two-sided CI for tau:
+#   -0.769, -0.544 
+# 
+#   > # D. site aggregation vs. proportional occupancy
+#   > kendall.ci(agg_e, globlMeta$propOcc, bootstrap = TRUE, B = 10000)
+# 
+# 1 - alpha = 0.95 two-sided CI for tau:
+#   -0.741, -0.544 
+
 # * Sampling scatterplots -------------------------------------------------
 
 # tau label positions
