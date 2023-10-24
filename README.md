@@ -1,7 +1,13 @@
 
 This repository contains all data and code necessary to run the analyses and produce the final results of the article, "Marine biodiversity and geographic distributions are independent on large scales" (Antell et al. 2020). The individual files are described below, and a visual diagram of the file sequence is supplied as the PDF named eco_release_analysis_workflow. The version numbers of important packages are listed in the Key Resources Table of the STAR Methods. Before running the code, 1) set the R working direction to the folder that contains both the /Data and /R folders, and 2) unzip the DS3 and DS4 folders so the tif and auxiliary files within are loose under /Data. The auxiliary files (.tif.xml and .tif.aux.xml) contain vital attribute information. The scripts can be run in any order, because all necessary intermediate outputs are saved in the /Data folder. The first release (v1.0.0) data and script files are archived at: https://doi.org/10.5281/zenodo.3491853. Please cite the article as follows:
 
-Antell, G. S., Kiessling, W., Aberhan, M., & Saupe, E. E. (2020). Marine biodiversity and geographic distributions are independent on large scales. Current Biology, 30(1), 115-121. https://doi.org/10.1016/j.cub.2019.10.065
+> Antell, G.T., Kiessling, W., Aberhan, M., and Saupe, E.E. (2020). Marine biodiversity and geographic distributions are independent on large scales. Current Biology, 30(1), 115-121. https://doi.org/10.1016/j.cub.2019.10.065
+
+In addition, a reanalysis of these data appears as a case study in the article, "Spatial standardization of taxon occurrence data—a call to action" (Antell et al. 2023). The script to reproduce results therein is R/timeseries_corr_comparison_sans_subsampling.R. The purpose of the study was to provide further justification for the necessity of spatial standardization.
+
+> Antell, G.T., Benson, R.B.J., and Saupe, E.E. (accepted). Spatial standardization of taxon occurrence data—a call to action. Paleobiology. Preprint available at Earth ArXiv, https://doi.org/10.31223/X5997Z
+
+As of 2023, the spatial standardization scripts have been improved and incorporated into functions within the `divvy` package, available for installation from CRAN. An introduction and documentation for the package are available at its [pkgdown website](https://gawainantell.github.io/divvy/index.html) 
 
 /Data
 
@@ -28,6 +34,8 @@ ASSEMBLAGE FRAMEWORK
 - bootstrap_assemblages_GSA.R: the purpose of this script is to bootstrap "assemblage-based" samples. The subsampling procedure is illustrated in Figure S1 and described in section 2.1 of Methods S1. The script contains options to alter the subsampling parameters as in the sensitivity analyses of Methods S1 section 2.3. The code relies on the functions provided as function_subsample_assemblage_approach_GSA.R, function_distribution_summary_GSA.R, and function_find_seed_cells_GSA.R
 
 - correlate_Tseries_GSA.R: this script calculates correlation coefficients between pairs of time series (e.g. geographic range size vs. species count), as described in STAR Methods section "Time Series Analysis." The initial data are output from the "bootstrap_assemblages_GSA.R" script, and are available as "DS5_assemblage_data_subsampled.csv", which is sourced as part of the correlate_Tseries_GSA code.
+
+- Edit 2023: timeseries_corr_comparison_sans_subsampling.R: this script reanalyzes the time series correlations presented in Antell et al. (2020) without performing spatial standardization. Results are discussed as a case study in Antell et al. (2023).
 
 TAXON-TRACKING FRAMEWORK
 
